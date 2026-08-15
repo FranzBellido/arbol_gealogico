@@ -1,0 +1,133 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+  id         String    @id @default(uuid())
+  firstName  String
+  lastName   String
+  maidenName String?
+  gender     Gender
+  isLiving   Boolean   @default(true)
+  birthDate  DateTime?
+  birthPlace String?
+  deathDate  DateTime?
+  deathPlace String?
+  biography  String?
+  avatarUrl  String?
+  userId     String
+  fatherId   String?
+  motherId   String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastName2  String?
+  email      String?
+  phone      String?
+  address    String?
+  is_locked  Boolean?
+  tree_id    String    @db.Uuid
+  father     Person?   @relation("FatherRelation", fields: [fatherId], references: [id])
+  fatherOf   Person[]  @relation("FatherRelation")
+  mother     Person?   @relation("MotherRelation", fields: [motherId], references: [id])
+  motherOf   Person[]  @relation("MotherRelation")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tree       tree      @relation(fields: [tree_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tree_fk")
+  photos     Photo[]
+  partner1   Union[]   @relation("Union_partner1IdToPerson")
+  partner2   Union[]   @relation("Union_partner2IdToPerson")
+}
+
+model Photo {
+  id        String   @id @default(uuid())
+  url       String
+  caption   String?
+  isMain    Boolean  @default(false)
+  personId  String
+  createdAt DateTime @default(now())
+  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model TreeAccess {
+  id         String         @id @default(uuid())
+  userId     String
+  ownerId    String
+  permission TreePermission @default(READ)
+  createdAt  DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ownerId])
+}
+
+model Union {
+  id           String    @id @default(uuid())
+  partner1Id   String
+  partner2Id   String
+  marriageDate DateTime?
+  divorceDate  DateTime?
+  isCurrent    Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  partner1     Person    @relation("Union_partner1IdToPerson", fields: [partner1Id], references: [id], onDelete: Cascade)
+  partner2     Person    @relation("Union_partner2IdToPerson", fields: [partner2Id], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id         String       @id @default(uuid())
+  email      String       @unique
+  name       String?
+  avatar     String?
+  provider   AuthProvider
+  providerId String       @unique
+  systemRole SystemRole   @default(USER)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  isApproved Boolean      @default(false)
+  is_admin   Boolean?
+  persons    Person[]
+  treeAccess TreeAccess[]
+  treeUsers  treeUser[]
+}
+
+model tree {
+  id      String     @id(map: "tree_pk") @db.Uuid
+  name    String     @db.VarChar
+  persons Person[]
+  members treeUser[]
+}
+
+model treeUser {
+  id_tree String @db.Uuid
+  id_user String
+  tree    tree   @relation(fields: [id_tree], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tree_fk")
+  user    User   @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_fk")
+
+  @@id([id_tree, id_user], map: "tree_user_pk")
+}
+
+enum SystemRole {
+  ADMIN
+  USER
+}
+
+enum TreePermission {
+  READ
+  WRITE
+  ADMIN
+}
+
+enum AuthProvider {
+  GOOGLE
+  FACEBOOK
+  DEV
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
