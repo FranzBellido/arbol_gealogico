@@ -50,4 +50,5 @@ RUN mkdir -p uploads
 EXPOSE ${PORT:-3001}
 
 # Run migrations then start the server
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "npx prisma migrate deploy && echo '>>> INICIANDO NODE...' && node dist/main"]
+
