@@ -6,4 +6,13 @@ export class AppController {
   getHello(): string {
     return 'Backend is running!';
   }
+
+  @Get('ping')
+  ping() {
+    return {
+      status: 'ok',
+      message: 'pong',
+      timestamp: new Date().toISOString()
+    };
+  }
 }

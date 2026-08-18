@@ -18,10 +18,15 @@ async function bootstrap() {
   // Serve static files
   app.use('/uploads', express.static(uploadsDir));
 
-  // Enable CORS — restrict to FRONTEND_URL in production, allow all in dev
-  const frontendUrl = process.env.FRONTEND_URL;
+  // Enable CORS — restrict to FRONTEND_URL(s) in production, allow all in dev
+  const frontendUrlStr = process.env.FRONTEND_URL;
+  let origin: string | string[] = '*';
+  if (frontendUrlStr) {
+    origin = frontendUrlStr.split(',').map(url => url.trim());
+  }
+
   app.enableCors({
-    origin: frontendUrl || '*',
+    origin: origin,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

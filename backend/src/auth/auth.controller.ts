@@ -24,8 +24,9 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Request() req, @Res() res: Response) {
     const result = await this.authService.oauthLogin(req.user, AuthProvider.GOOGLE);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    return res.redirect(`${frontendUrl}/login?token=${result.access_token}`);
+    const frontendUrls = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const primaryFrontendUrl = frontendUrls.split(',')[0].trim();
+    return res.redirect(`${primaryFrontendUrl}/login?token=${result.access_token}`);
   }
 
   @UseGuards(JwtAuthGuard)
