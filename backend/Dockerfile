@@ -56,7 +56,6 @@ USER node
 EXPOSE ${PORT:-3001}
 
 # In Render, it's recommended to run migrations in the "Pre-Deploy Command" 
-# via the Render Dashboard: npx prisma migrate deploy
-# So here we just start the app
-CMD ["node", "dist/main"]
+# but if you prefer the container to automatically run migrations on startup:
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
 
