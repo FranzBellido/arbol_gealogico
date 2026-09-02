@@ -26,6 +26,9 @@ RUN npm run build
 # ---- Production Stage ----
 FROM node:20-alpine AS production
 
+# Variables de entorno para producción
+ENV NODE_ENV=production
+
 WORKDIR /app
 
 # Install openssl for Prisma
@@ -43,12 +46,17 @@ RUN npx prisma generate
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Create uploads directory
-RUN mkdir -p uploads
+# Create uploads directory and change ownership to 'node' user
+RUN mkdir -p uploads && chown -R node:node /app
 
-# Railway provides PORT automatically
+# Switch to non-root user for security
+USER node
+
+# Render provides PORT automatically via environment variable
 EXPOSE ${PORT:-3001}
 
-# Run migrations then start the server
-CMD ["sh", "-c", "npx prisma migrate deploy && echo '>>> INICIANDO NODE...' && node dist/main"]
+# In Render, it's recommended to run migrations in the "Pre-Deploy Command" 
+# via the Render Dashboard: npx prisma migrate deploy
+# So here we just start the app
+CMD ["node", "dist/main"]
 
