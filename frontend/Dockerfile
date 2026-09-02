@@ -1,6 +1,10 @@
 # ---- Build Stage ----
 FROM node:20-alpine AS builder
 
+# Recibir variables de entorno de Render durante el build
+ARG API_BASE_URL
+ENV API_BASE_URL=$API_BASE_URL
+
 WORKDIR /app
 
 # Copy package files first for better layer caching
@@ -12,7 +16,7 @@ RUN npm ci
 # Copy the rest of the source code
 COPY . .
 
-# Build the Nuxt application
+# Build the Nuxt application (now API_BASE_URL is available here)
 RUN npm run build
 
 # ---- Production Stage ----
