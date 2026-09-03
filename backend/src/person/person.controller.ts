@@ -6,7 +6,7 @@ import { Gender } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { memoryStorage } from 'multer';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import { createClient } from '@supabase/supabase-js';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
