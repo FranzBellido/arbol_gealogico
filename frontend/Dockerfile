@@ -1,5 +1,5 @@
 # ---- Build Stage ----
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Recibir variables de entorno de Render durante el build
 ARG API_BASE_URL
@@ -20,7 +20,7 @@ COPY . .
 RUN npm run build
 
 # ---- Production Stage ----
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
 
 # Variables de entorno fundamentales para producción en Nuxt/Nitro
 ENV NODE_ENV=production
