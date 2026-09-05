@@ -33,7 +33,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
   // Bind to 0.0.0.0 — required for Railway and container environments
   await app.listen(port, '0.0.0.0');
   console.log(`Application is running on port ${port}`);

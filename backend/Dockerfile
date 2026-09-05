@@ -41,7 +41,7 @@ COPY prisma ./prisma/
 RUN npm ci --omit=dev
 
 # Re-generate Prisma client in production image (needs correct binary)
-RUN npx prisma generate
+RUN npx -y prisma generate
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
@@ -57,5 +57,5 @@ EXPOSE ${PORT:-3001}
 
 # In Render, it's recommended to run migrations in the "Pre-Deploy Command" 
 # but if you prefer the container to automatically run migrations on startup:
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "npx -y prisma migrate deploy && node dist/main"]
 
