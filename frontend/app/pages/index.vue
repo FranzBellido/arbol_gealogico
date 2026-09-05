@@ -126,6 +126,13 @@
       @toggle-lock="handleToggleLock"
     />
 
+    <PersonDetailModal
+      v-model="isDetailModalOpen"
+      :person="selectedPerson"
+      :can-edit="currentTreePermission.canWrite"
+      @edit="openEditPersonModal"
+    />
+
     <UnionFormModal
       v-model="isUnionModalOpen"
       :persons-list="persons"
@@ -172,6 +179,7 @@ import { useAuthStore } from '../stores/auth'
 // Import custom flow nodes
 import CustomNode from '../components/CustomNode.vue'
 import UnionNode from '../components/UnionNode.vue'
+import PersonDetailModal from '../components/PersonDetailModal.vue'
 
 // Import stylesheet of Vue Flow
 import '@vue-flow/core/dist/style.css'
@@ -216,6 +224,7 @@ const currentTreePermission = ref({ level: null, isAdmin: false, canWrite: false
 
 // Modal states
 const isPersonModalOpen = ref(false)
+const isDetailModalOpen = ref(false)
 const isUnionModalOpen = ref(false)
 const isShareModalOpen = ref(false)
 const isCreateTreeModalOpen = ref(false)
@@ -391,10 +400,17 @@ function generateTreeLayout() {
     nodes.push({
       id: p.id,
       type: 'person',
-      data: { ...p, isLocked: p.isLocked || false },
+      data: { ...p, isLocked: p.isLocked || false, canEdit: currentTreePermission.value.canWrite, canAdmin: currentTreePermission.value.isAdmin },
       position: { x: posX, y: posY },
       events: {
-        click: () => openEditPersonModal(p)
+        click: () => openViewPersonModal(p),
+        view: () => openViewPersonModal(p),
+        edit: () => openEditPersonModal(p),
+        delete: () => {
+          if (confirm('¿Estás seguro de que deseas eliminar a esta persona?')) {
+            handleDeletePerson(p.id)
+          }
+        }
       }
     })
   })
@@ -486,6 +502,11 @@ function generateTreeLayout() {
 function openAddPersonModal() {
   selectedPerson.value = null
   isPersonModalOpen.value = true
+}
+
+function openViewPersonModal(person) {
+  selectedPerson.value = person
+  isDetailModalOpen.value = true
 }
 
 function openEditPersonModal(person) {

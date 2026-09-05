@@ -30,14 +30,10 @@
     <Handle type="source" position="bottom" class="w-3 h-3 bg-gray-600 border border-gray-900 rounded-full" />
 
     <!-- Edit buttons / quick actions -->
-    <div class="absolute top-2 right-2 flex gap-1 opacity-0 hover:opacity-100 transition-opacity">
-      <UButton
-        icon="i-heroicons-pencil-square"
-        size="2xs"
-        color="gray"
-        variant="ghost"
-        @click.stop="$emit('edit', data.id)"
-      />
+    <div v-if="data.canEdit" class="absolute top-2 right-2 z-10">
+      <UDropdown :items="dropdownItems" :popper="{ placement: 'bottom-end' }">
+        <UButton color="gray" variant="ghost" icon="i-heroicons-ellipsis-vertical" size="xs" @click.stop />
+      </UDropdown>
     </div>
   </div>
 </template>
@@ -53,7 +49,27 @@ const props = defineProps({
   }
 })
 
-defineEmits(['edit'])
+const emit = defineEmits(['edit', 'view', 'delete'])
+
+const dropdownItems = computed(() => {
+  const items = [
+    {
+      label: 'Editar',
+      icon: 'i-heroicons-pencil-square',
+      click: () => emit('edit', props.data.id)
+    }
+  ]
+  
+  if (props.data.canAdmin && !props.data.isLocked) {
+    items.push({
+      label: 'Eliminar',
+      icon: 'i-heroicons-trash',
+      click: () => emit('delete', props.data.id)
+    })
+  }
+  
+  return [items]
+})
 
 const genderClass = computed(() => {
   if (props.data.gender === 'MALE') return 'border-blue-500/50 ring-1 ring-blue-500/20'
