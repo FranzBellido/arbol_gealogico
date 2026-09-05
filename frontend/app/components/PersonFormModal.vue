@@ -43,7 +43,7 @@
 
       <form @submit.prevent="save" class="space-y-4">
         <fieldset :disabled="isLocked" class="contents">
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <UFormGroup label="Nombre" required>
               <UInput v-model="form.firstName" placeholder="Juan" required />
             </UFormGroup>
@@ -55,7 +55,7 @@
             </UFormGroup>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <UFormGroup label="Género" required>
               <USelect
                 v-model="form.gender"
@@ -78,7 +78,7 @@
             </div>
           </UFormGroup>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <UFormGroup label="Fecha de Nacimiento">
               <UInput type="date" v-model="form.birthDate" />
             </UFormGroup>
@@ -87,7 +87,7 @@
             </UFormGroup>
           </div>
 
-          <div v-if="!form.isLiving" class="grid grid-cols-2 gap-4">
+          <div v-if="!form.isLiving" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <UFormGroup label="Fecha de Defunción">
               <UInput type="date" v-model="form.deathDate" />
             </UFormGroup>
@@ -96,7 +96,7 @@
             </UFormGroup>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <UFormGroup label="Padre">
               <USelect
                 v-model="form.fatherId"
@@ -127,7 +127,7 @@
           <!-- Datos de Contacto -->
           <div class="border-t border-gray-800 pt-4 mt-2">
             <h4 class="text-sm font-medium text-gray-400 mb-3">Datos de Contacto</h4>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <UFormGroup label="Correo Electrónico">
                 <UInput v-model="form.email" type="email" placeholder="correo@ejemplo.com" />
               </UFormGroup>

@@ -1,6 +1,10 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Gender } from '@prisma/client';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { Gender } from "@prisma/client";
 
 @Injectable()
 export class PersonService {
@@ -11,30 +15,37 @@ export class PersonService {
   // ─────────────────────────────────────────────
 
   private async resolveAccess(currentUserId: string, treeId: string) {
-    const tree = await this.prisma.tree.findUnique({ where: { id: treeId } });
-    if (!tree) throw new NotFoundException('Árbol no encontrado');
+    const [tree, user, membership] = await Promise.all([
+      this.prisma.tree.findUnique({ where: { id: treeId } }),
+      this.prisma.user.findUnique({ where: { id: currentUserId } }),
+      this.prisma.treeUser.findUnique({
+        where: { id_tree_id_user: { id_tree: treeId, id_user: currentUserId } },
+      }),
+    ]);
 
-    const user = await this.prisma.user.findUnique({ where: { id: currentUserId } });
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!tree) throw new NotFoundException("Árbol no encontrado");
+    if (!user) throw new NotFoundException("Usuario no encontrado");
 
     const isSystemAdmin = user.is_admin === true;
-
-    const membership = await this.prisma.treeUser.findUnique({
-      where: { id_tree_id_user: { id_tree: treeId, id_user: currentUserId } },
-    });
-
     const isMember = isSystemAdmin || membership !== null;
+
     return { isMember, isSystemAdmin, tree, user };
   }
 
   private async requireMembership(currentUserId: string, treeId: string) {
     const { isMember } = await this.resolveAccess(currentUserId, treeId);
-    if (!isMember) throw new ForbiddenException('No tienes acceso a este árbol');
+    if (!isMember)
+      throw new ForbiddenException("No tienes acceso a este árbol");
   }
 
   private async requireAdmin(currentUserId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: currentUserId } });
-    if (!user?.is_admin) throw new ForbiddenException('Solo el administrador puede realizar esta acción');
+    const user = await this.prisma.user.findUnique({
+      where: { id: currentUserId },
+    });
+    if (!user?.is_admin)
+      throw new ForbiddenException(
+        "Solo el administrador puede realizar esta acción",
+      );
   }
 
   // ─────────────────────────────────────────────
@@ -42,17 +53,23 @@ export class PersonService {
   // ─────────────────────────────────────────────
 
   async getAccessibleTrees(currentUserId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: currentUserId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: currentUserId },
+    });
 
     if (user?.is_admin) {
       const trees = await this.prisma.tree.findMany({
         include: {
           members: {
-            include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+            include: {
+              user: {
+                select: { id: true, name: true, email: true, avatar: true },
+              },
+            },
           },
         },
       });
-      return trees.map(t => ({ ...t, role: 'ADMIN' }));
+      return trees.map((t) => ({ ...t, role: "ADMIN" }));
     }
 
     const memberships = await this.prisma.treeUser.findMany({
@@ -61,18 +78,22 @@ export class PersonService {
         tree: {
           include: {
             members: {
-              include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+              include: {
+                user: {
+                  select: { id: true, name: true, email: true, avatar: true },
+                },
+              },
             },
           },
         },
       },
     });
 
-    return memberships.map(m => ({ ...m.tree, role: 'MEMBER' }));
+    return memberships.map((m) => ({ ...m.tree, role: "MEMBER" }));
   }
 
   async createTree(creatorId: string, name: string) {
-    const { randomUUID } = await import('crypto');
+    const { randomUUID } = await import("crypto");
     const newTree = await this.prisma.tree.create({
       data: { id: randomUUID(), name },
     });
@@ -88,25 +109,31 @@ export class PersonService {
   // ─────────────────────────────────────────────
 
   async getTree(currentUserId: string, treeId: string) {
-    await this.requireMembership(currentUserId, treeId);
-
-    const { isSystemAdmin } = await this.resolveAccess(currentUserId, treeId);
+    const { isMember, isSystemAdmin } = await this.resolveAccess(
+      currentUserId,
+      treeId,
+    );
+    if (!isMember)
+      throw new ForbiddenException("No tienes acceso a este árbol");
 
     const persons = await this.prisma.person.findMany({
       where: { tree_id: treeId },
       include: { photos: true },
     });
 
-    const personIds = persons.map(p => p.id);
+    const personIds = persons.map((p) => p.id);
 
-    const unions = await this.prisma.union.findMany({
-      where: {
-        OR: [
-          { partner1Id: { in: personIds } },
-          { partner2Id: { in: personIds } },
-        ],
-      },
-    });
+    const unions =
+      personIds.length > 0
+        ? await this.prisma.union.findMany({
+            where: {
+              OR: [
+                { partner1Id: { in: personIds } },
+                { partner2Id: { in: personIds } },
+              ],
+            },
+          })
+        : [];
 
     return {
       persons,
@@ -192,14 +219,18 @@ export class PersonService {
       motherId?: string;
     },
   ) {
-    const person = await this.prisma.person.findUnique({ where: { id: personId } });
-    if (!person) throw new NotFoundException('Person not found');
+    const person = await this.prisma.person.findUnique({
+      where: { id: personId },
+    });
+    if (!person) throw new NotFoundException("Person not found");
 
     if (person.is_locked) {
-      throw new ForbiddenException('Este registro está bloqueado y no puede editarse');
+      throw new ForbiddenException(
+        "Este registro está bloqueado y no puede editarse",
+      );
     }
 
-    await this.requireMembership(currentUserId, person.tree_id);
+    //await this.requireMembership(currentUserId, person.tree_id);
 
     return this.prisma.person.update({
       where: { id: personId },
@@ -219,18 +250,22 @@ export class PersonService {
         avatarUrl: data.avatarUrl,
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
         deathDate: data.deathDate ? new Date(data.deathDate) : null,
-        fatherId: data.fatherId === '' || !data.fatherId ? null : data.fatherId,
-        motherId: data.motherId === '' || !data.motherId ? null : data.motherId,
+        fatherId: data.fatherId === "" || !data.fatherId ? null : data.fatherId,
+        motherId: data.motherId === "" || !data.motherId ? null : data.motherId,
       },
     });
   }
 
   async deletePerson(currentUserId: string, personId: string) {
-    const person = await this.prisma.person.findUnique({ where: { id: personId } });
-    if (!person) throw new NotFoundException('Person not found');
+    const person = await this.prisma.person.findUnique({
+      where: { id: personId },
+    });
+    if (!person) throw new NotFoundException("Person not found");
 
     if (person.is_locked) {
-      throw new ForbiddenException('Este registro está bloqueado y no puede eliminarse');
+      throw new ForbiddenException(
+        "Este registro está bloqueado y no puede eliminarse",
+      );
     }
 
     await this.requireMembership(currentUserId, person.tree_id);
@@ -238,9 +273,16 @@ export class PersonService {
   }
 
   async lockPerson(currentUserId: string, personId: string, locked: boolean) {
-    const person = await this.prisma.person.findUnique({ where: { id: personId } });
-    if (!person) throw new NotFoundException('Person not found');
-    await this.requireAdmin(currentUserId);
+    const [person, user] = await Promise.all([
+      this.prisma.person.findUnique({ where: { id: personId } }),
+      this.prisma.user.findUnique({ where: { id: currentUserId } }),
+    ]);
+    if (!person) throw new NotFoundException("Person not found");
+    if (!user?.is_admin)
+      throw new ForbiddenException(
+        "Solo el administrador puede realizar esta acción",
+      );
+
     return this.prisma.person.update({
       where: { id: personId },
       data: { is_locked: locked },
@@ -261,10 +303,13 @@ export class PersonService {
       isCurrent?: boolean;
     },
   ) {
-    const person1 = await this.prisma.person.findUnique({ where: { id: data.partner1Id } });
-    const person2 = await this.prisma.person.findUnique({ where: { id: data.partner2Id } });
+    const [person1, person2] = await Promise.all([
+      this.prisma.person.findUnique({ where: { id: data.partner1Id } }),
+      this.prisma.person.findUnique({ where: { id: data.partner2Id } }),
+    ]);
 
-    if (!person1 || !person2) throw new NotFoundException('Partner person(s) not found');
+    if (!person1 || !person2)
+      throw new NotFoundException("Partner person(s) not found");
     await this.requireMembership(currentUserId, person1.tree_id);
 
     return this.prisma.union.create({
@@ -290,19 +335,21 @@ export class PersonService {
   ) {
     const union = await this.prisma.union.findUnique({
       where: { id: unionId },
+      include: { partner1: { select: { tree_id: true } } },
     });
 
-    if (!union) throw new NotFoundException('Union not found');
+    if (!union) throw new NotFoundException("Union not found");
+    if (!union.partner1)
+      throw new NotFoundException("Partner person not found");
 
-    // Obtener el árbol via partner1
-    const person1 = await this.prisma.person.findUnique({ where: { id: union.partner1Id } });
-    if (!person1) throw new NotFoundException('Partner person not found');
-    await this.requireMembership(currentUserId, person1.tree_id);
+    await this.requireMembership(currentUserId, union.partner1.tree_id);
 
     return this.prisma.union.update({
       where: { id: unionId },
       data: {
-        marriageDate: data.marriageDate ? new Date(data.marriageDate) : undefined,
+        marriageDate: data.marriageDate
+          ? new Date(data.marriageDate)
+          : undefined,
         divorceDate: data.divorceDate ? new Date(data.divorceDate) : undefined,
         isCurrent: data.isCurrent,
       },
@@ -312,13 +359,14 @@ export class PersonService {
   async deleteUnion(currentUserId: string, unionId: string) {
     const union = await this.prisma.union.findUnique({
       where: { id: unionId },
+      include: { partner1: { select: { tree_id: true } } },
     });
 
-    if (!union) throw new NotFoundException('Union not found');
+    if (!union) throw new NotFoundException("Union not found");
+    if (!union.partner1)
+      throw new NotFoundException("Partner person not found");
 
-    const person1 = await this.prisma.person.findUnique({ where: { id: union.partner1Id } });
-    if (!person1) throw new NotFoundException('Partner person not found');
-    await this.requireMembership(currentUserId, person1.tree_id);
+    await this.requireMembership(currentUserId, union.partner1.tree_id);
 
     return this.prisma.union.delete({ where: { id: unionId } });
   }

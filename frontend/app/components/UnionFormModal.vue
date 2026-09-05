@@ -29,7 +29,7 @@
           />
         </UFormGroup>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UFormGroup label="Fecha de Unión">
             <UInput type="date" v-model="form.marriageDate" />
           </UFormGroup>

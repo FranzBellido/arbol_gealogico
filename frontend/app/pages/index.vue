@@ -1,17 +1,30 @@
 <template>
   <div class="h-screen flex flex-col bg-gray-950 overflow-hidden">
     <!-- Navbar -->
-    <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between z-20">
-      <div class="flex items-center gap-3">
-        <UIcon name="i-heroicons-share" class="text-primary-500 w-8 h-8" />
-        <div>
-          <h1 class="text-lg font-bold text-white leading-tight">GeneaTree</h1>
-          <p class="text-xs text-gray-400">Árbol Genealógico Interactivo</p>
+    <header class="bg-gray-900 border-b border-gray-800 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-20">
+      <div class="flex items-center justify-between w-full sm:w-auto">
+        <div class="flex items-center gap-3">
+          <UIcon name="i-heroicons-share" class="text-primary-500 w-6 h-6 sm:w-8 sm:h-8" />
+          <div>
+            <h1 class="text-base sm:text-lg font-bold text-white leading-tight">GeneaTree</h1>
+            <p class="hidden sm:block text-xs text-gray-400">Árbol Genealógico Interactivo</p>
+          </div>
+        </div>
+        <!-- Mobile avatar & logout (visible only on small screens) -->
+        <div class="flex items-center gap-2 sm:hidden">
+          <UAvatar :src="auth.user?.avatar || ''" :alt="auth.user?.name" size="sm" />
+          <UButton
+            icon="i-heroicons-arrow-left-on-rectangle"
+            size="sm"
+            color="red"
+            variant="ghost"
+            @click="auth.logout()"
+          />
         </div>
       </div>
 
       <!-- Controls & Tree Selector -->
-      <div class="flex items-center gap-4">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 hide-scrollbar">
         <!-- Selector de árbol -->
         <USelect
           v-model="selectedTreeId"
@@ -19,7 +32,7 @@
           option-attribute="label"
           value-attribute="value"
           placeholder="Seleccionar árbol..."
-          class="min-w-[220px]"
+          class="min-w-[150px] sm:min-w-[220px] flex-grow sm:flex-grow-0"
         />
 
         <UButton
@@ -28,8 +41,9 @@
           variant="soft"
           icon="i-heroicons-user-plus"
           @click="openAddPersonModal"
+          class="flex-shrink-0"
         >
-          Agregar Familiar
+          <span class="hidden sm:inline">Agregar Familiar</span>
         </UButton>
 
         <UButton
@@ -38,8 +52,9 @@
           variant="soft"
           icon="i-heroicons-heart"
           @click="isUnionModalOpen = true"
+          class="flex-shrink-0"
         >
-          Registrar Unión
+          <span class="hidden sm:inline">Registrar Unión</span>
         </UButton>
 
         <!-- Solo admins del árbol pueden compartir -->
@@ -49,8 +64,9 @@
           variant="ghost"
           icon="i-heroicons-share"
           @click="isShareModalOpen = true"
+          class="flex-shrink-0"
         >
-          Compartir
+          <span class="hidden sm:inline">Compartir</span>
         </UButton>
 
         <!-- Badge de solo lectura -->
@@ -65,13 +81,15 @@
           variant="soft"
           icon="i-heroicons-shield-check"
           to="/admin"
+          class="flex-shrink-0"
         >
-          Administrar
+          <span class="hidden sm:inline">Administrar</span>
         </UButton>
 
-        <div class="flex items-center gap-2 border-l border-gray-800 pl-4">
+        <!-- Desktop avatar & logout -->
+        <div class="hidden sm:flex items-center gap-2 border-l border-gray-800 pl-4">
           <UAvatar :src="auth.user?.avatar || ''" :alt="auth.user?.name" size="sm" />
-          <span class="text-sm font-medium text-gray-300 hidden md:inline">{{ auth.user?.name }}</span>
+          <span class="text-sm font-medium text-gray-300">{{ auth.user?.name }}</span>
           <UButton
             icon="i-heroicons-arrow-left-on-rectangle"
             size="sm"
