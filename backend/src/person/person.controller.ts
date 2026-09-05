@@ -10,18 +10,11 @@ import {
   Query,
   UseGuards,
   Request,
-  UseInterceptors,
-  UploadedFile,
 } from "@nestjs/common";
 import { PersonService } from "./person.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { ApprovedGuard } from "../auth/approved.guard";
 import { Gender } from "@prisma/client";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { extname } from "path";
-import { memoryStorage } from "multer";
-const sharp = require("sharp");
-import { createClient } from "@supabase/supabase-js";
 import { HttpException, HttpStatus } from "@nestjs/common";
 
 @UseGuards(JwtAuthGuard, ApprovedGuard)
@@ -155,100 +148,5 @@ export class PersonController {
     return this.personService.deleteUnion(req.user.id, id);
   }
 
-  // ─── Upload ─────────────────────────────────────────────────
 
-  @Post("upload")
-  @UseInterceptors(
-    FileInterceptor("file", {
-      storage: memoryStorage(),
-      limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
-      },
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-          return cb(
-            new HttpException(
-              "Sólo se permiten imágenes (JPG, PNG, WebP)",
-              HttpStatus.BAD_REQUEST,
-            ),
-            false,
-          );
-        }
-        cb(null, true);
-      },
-    }),
-  )
-  async uploadFile(@UploadedFile() file: any) {
-    if (!file) {
-      throw new HttpException(
-        "No se proporcionó ningún archivo",
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    try {
-      // 1. Procesar imagen con Sharp (Redimensionar y convertir a WebP)
-      const compressedBuffer = await sharp(file.buffer)
-        .resize(800, 800, {
-          fit: "inside",
-          withoutEnlargement: true,
-        })
-        .webp({ quality: 80 })
-        .toBuffer();
-
-      // 2. Configurar cliente Supabase
-      const supabaseUrl = process.env.SUPABASE_URL;
-      const supabaseKey = process.env.SUPABASE_KEY;
-      const supabaseBucket = process.env.SUPABASE_BUCKET || "uploads";
-
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error(
-          "Las credenciales de Supabase no están configuradas en el .env",
-        );
-      }
-
-      console.log(
-        "URL",
-        supabaseUrl,
-        "KEY",
-        supabaseKey,
-        "BUCKET",
-        supabaseBucket,
-      );
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
-      // 3. Generar nombre de archivo único
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      const filename = `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`;
-
-      // 4. Subir a Supabase
-      const { data, error } = await supabase.storage
-        .from(supabaseBucket)
-        .upload(filename, compressedBuffer, {
-          contentType: file.mimetype,
-          upsert: false,
-        });
-
-      if (error) {
-        console.error("Error de subida a Supabase:", error);
-        throw new HttpException(
-          "Error al subir la imagen al servidor",
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
-      // 5. Obtener URL pública
-      const { data: publicUrlData } = supabase.storage
-        .from(supabaseBucket)
-        .getPublicUrl(filename);
-
-      return { url: publicUrlData.publicUrl };
-    } catch (err) {
-      console.error(err);
-      throw new HttpException(
-        err.message || "Error al procesar la imagen",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
 }

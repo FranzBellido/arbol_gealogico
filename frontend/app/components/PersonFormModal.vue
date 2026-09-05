@@ -119,27 +119,7 @@
                 size="lg"
                 class="border border-gray-700 bg-gray-800"
               />
-              <div class="flex flex-col gap-1">
-                <UButton
-                  type="button"
-                  size="sm"
-                  color="gray"
-                  icon="i-heroicons-arrow-up-tray"
-                  :loading="uploading"
-                  :disabled="isLocked"
-                  @click="triggerFileInput"
-                >
-                  Subir Imagen
-                </UButton>
-                <span class="text-xs text-gray-500">JPG, PNG o WEBP. Máx 5MB</span>
-              </div>
-              <input
-                type="file"
-                ref="fileInput"
-                accept="image/*"
-                class="hidden"
-                @change="handleFileUpload"
-              />
+
             </div>
             <UInput v-model="form.avatarUrl" placeholder="O ingresa la URL directamente..." class="mt-2" :disabled="isLocked" />
           </UFormGroup>
@@ -186,35 +166,7 @@ import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
-const fileInput = ref(null)
-const uploading = ref(false)
 
-function triggerFileInput() {
-  fileInput.value?.click()
-}
-
-async function handleFileUpload(event) {
-  const target = event.target
-  if (!target.files || target.files.length === 0) return
-
-  const file = target.files[0]
-  const formData = new FormData()
-  formData.append('file', file)
-
-  uploading.value = true
-  try {
-    const data = await auth.apiFetch('/tree/upload', {
-      method: 'POST',
-      body: formData
-    })
-    form.value.avatarUrl = data.url
-  } catch (error) {
-    console.error(error)
-    alert('Error al subir la imagen')
-  } finally {
-    uploading.value = false
-  }
-}
 
 const props = defineProps({
   modelValue: Boolean,
