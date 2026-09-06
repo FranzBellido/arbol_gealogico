@@ -13,8 +13,9 @@
         :ui="{ background: data.gender === 'MALE' ? 'bg-blue-900/50' : data.gender === 'FEMALE' ? 'bg-pink-900/50' : 'bg-gray-800' }"
       />
       <div>
-        <div class="font-bold text-sm leading-tight text-white">
+        <div class="font-bold text-sm leading-tight text-white flex items-center gap-1">
           {{ data.firstName }} {{ data.lastName }} {{ data.lastName2 || '' }}
+          <span v-if="!data.isLiving" class="text-gray-400 text-lg leading-none font-normal" title="Fallecido/a">†</span>
         </div>
         <div v-if="data.maidenName" class="text-xs text-gray-400 italic">
           (née: {{ data.maidenName }})
