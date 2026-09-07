@@ -57,6 +57,17 @@
           <span class="hidden sm:inline">Registrar Unión</span>
         </UButton>
 
+        <UButton
+          v-if="currentTreePermission.canWrite"
+          color="blue"
+          variant="soft"
+          icon="i-heroicons-adjustments-horizontal"
+          @click="organizeTree"
+          class="flex-shrink-0"
+        >
+          <span class="hidden sm:inline">Organizar</span>
+        </UButton>
+
         <!-- Solo admins del árbol pueden compartir -->
         <UButton
           v-if="currentTreePermission.isAdmin"
@@ -193,6 +204,7 @@ import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { useAuthStore } from '../stores/auth'
+import dagre from 'dagre'
 
 // Import custom flow nodes
 import CustomNode from '../components/CustomNode.vue'
@@ -587,6 +599,39 @@ async function handleSaveUnion(formData) {
     console.error(error)
     toast.add({ title: 'Error', description: 'No se pudo registrar la unión', color: 'red' })
   }
+}
+
+function organizeTree() {
+  if (!elements.value.length) return
+  
+  const g = new dagre.graphlib.Graph()
+  g.setGraph({ rankdir: 'TB', ranker: 'network-simplex', nodesep: 150, ranksep: 200 })
+  g.setDefaultEdgeLabel(() => ({}))
+
+  elements.value.forEach(el => {
+    if (el.type === 'person' || el.type === 'union') {
+      const width = el.type === 'person' ? 250 : 80
+      const height = el.type === 'person' ? 120 : 80
+      g.setNode(el.id, { width, height })
+    } else if (el.source && el.target) {
+      g.setEdge(el.source, el.target)
+    }
+  })
+
+  dagre.layout(g)
+
+  elements.value.forEach(el => {
+    if (el.type === 'person' || el.type === 'union') {
+      const nodeWithPosition = g.node(el.id)
+      el.position = {
+        x: nodeWithPosition.x - nodeWithPosition.width / 2,
+        y: nodeWithPosition.y - nodeWithPosition.height / 2
+      }
+      saveNodePosition(el.id, el.position)
+    }
+  })
+  
+  setTimeout(() => fitView({ padding: 0.2, duration: 800 }), 100)
 }
 </script>
 

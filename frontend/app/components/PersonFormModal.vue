@@ -227,34 +227,46 @@ const femaleOptions = computed(() =>
     .map(p => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))
 )
 
+function initForm() {
+  const newPerson = props.person
+  if (newPerson) {
+    form.value = {
+      firstName: newPerson.firstName || '',
+      lastName: newPerson.lastName || '',
+      lastName2: newPerson.lastName2 || '',
+      email: newPerson.email || '',
+      phone: newPerson.phone || '',
+      address: newPerson.address || '',
+      maidenName: newPerson.maidenName || '',
+      gender: newPerson.gender || 'MALE',
+      isLiving: newPerson.isLiving !== false,
+      birthDate: newPerson.birthDate ? newPerson.birthDate.substring(0, 10) : '',
+      birthPlace: newPerson.birthPlace || '',
+      deathDate: newPerson.deathDate ? newPerson.deathDate.substring(0, 10) : '',
+      deathPlace: newPerson.deathPlace || '',
+      fatherId: newPerson.fatherId || '',
+      motherId: newPerson.motherId || '',
+      avatarUrl: newPerson.avatarUrl || '',
+      biography: newPerson.biography || ''
+    }
+  } else {
+    form.value = defaultForm()
+  }
+}
+
 watch(
   () => props.person,
-  (newPerson) => {
-    if (newPerson) {
-      form.value = {
-        firstName: newPerson.firstName || '',
-        lastName: newPerson.lastName || '',
-        lastName2: newPerson.lastName2 || '',
-        email: newPerson.email || '',
-        phone: newPerson.phone || '',
-        address: newPerson.address || '',
-        maidenName: newPerson.maidenName || '',
-        gender: newPerson.gender || 'MALE',
-        isLiving: newPerson.isLiving !== false,
-        birthDate: newPerson.birthDate ? newPerson.birthDate.substring(0, 10) : '',
-        birthPlace: newPerson.birthPlace || '',
-        deathDate: newPerson.deathDate ? newPerson.deathDate.substring(0, 10) : '',
-        deathPlace: newPerson.deathPlace || '',
-        fatherId: newPerson.fatherId || '',
-        motherId: newPerson.motherId || '',
-        avatarUrl: newPerson.avatarUrl || '',
-        biography: newPerson.biography || ''
-      }
-    } else {
-      form.value = defaultForm()
-    }
-  },
+  initForm,
   { immediate: true }
+)
+
+watch(
+  () => props.modelValue,
+  (isOpen) => {
+    if (isOpen) {
+      initForm()
+    }
+  }
 )
 
 function save() {
