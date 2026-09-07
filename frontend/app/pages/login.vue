@@ -20,46 +20,48 @@
         </div>
 
         <div v-else class="space-y-6">
-          <form @submit.prevent="handleLogin" class="space-y-6">
-            <UFormGroup label="Correo Electrónico" required>
-              <UInput
-                v-model="email"
-                type="email"
-                placeholder="juan.perez@example.com"
-                icon="i-heroicons-envelope"
-                color="gray"
+          <template v-if="config.public.enableDemoLogin">
+            <form @submit.prevent="handleLogin" class="space-y-6">
+              <UFormGroup label="Correo Electrónico" required>
+                <UInput
+                  v-model="email"
+                  type="email"
+                  placeholder="juan.perez@example.com"
+                  icon="i-heroicons-envelope"
+                  color="gray"
+                  size="lg"
+                />
+              </UFormGroup>
+
+              <UFormGroup label="Nombre Completo" required>
+                <UInput
+                  v-model="name"
+                  placeholder="Juan Pérez"
+                  icon="i-heroicons-user"
+                  color="gray"
+                  size="lg"
+                />
+              </UFormGroup>
+
+              <UButton
+                type="submit"
+                color="primary"
+                variant="solid"
+                block
                 size="lg"
-              />
-            </UFormGroup>
+                :loading="loading"
+                class="transition-all duration-300 transform hover:scale-[1.01]"
+              >
+                Iniciar Sesión (Dev Mode)
+              </UButton>
+            </form>
 
-            <UFormGroup label="Nombre Completo" required>
-              <UInput
-                v-model="name"
-                placeholder="Juan Pérez"
-                icon="i-heroicons-user"
-                color="gray"
-                size="lg"
-              />
-            </UFormGroup>
-
-            <UButton
-              type="submit"
-              color="primary"
-              variant="solid"
-              block
-              size="lg"
-              :loading="loading"
-              class="transition-all duration-300 transform hover:scale-[1.01]"
-            >
-              Iniciar Sesión (Dev Mode)
-            </UButton>
-          </form>
-
-          <div class="flex items-center my-6">
-            <div class="flex-grow border-t border-gray-800"></div>
-            <span class="mx-4 text-xs text-gray-500 uppercase tracking-wider">o continuar con</span>
-            <div class="flex-grow border-t border-gray-800"></div>
-          </div>
+            <div class="flex items-center my-6">
+              <div class="flex-grow border-t border-gray-800"></div>
+              <span class="mx-4 text-xs text-gray-500 uppercase tracking-wider">o continuar con</span>
+              <div class="flex-grow border-t border-gray-800"></div>
+            </div>
+          </template>
 
           <UButton
             color="white"
@@ -80,7 +82,9 @@
 
           <div class="mt-8 pt-6 border-t border-gray-800 text-center">
             <p class="text-xs text-gray-500">
-              Conexión local segura. Los datos se persistirán en la base de datos de GeneaTree.
+              Conexión local segura. Los datos se persistirán en la base de datos de GeneaTree.<br>
+              Aplicación creada por: **Franz B.V.**<br>
+              correo: <a :href="`mailto:${developerEmail}`" class="text-primary-500 hover:underline">{{ developerEmail }}</a>
             </p>
           </div>
         </div>
@@ -100,6 +104,8 @@ definePageMeta({
 
 const auth = useAuthStore()
 const route = useRoute()
+const config = useRuntimeConfig()
+const developerEmail = ref('franzbellido@gmail.com')
 const email = ref('demo@example.com')
 const name = ref('Usuario Demo')
 const loading = ref(false)
@@ -139,7 +145,6 @@ async function handleLogin() {
 }
 
 function handleGoogleLogin() {
-  const config = useRuntimeConfig()
   window.location.href = `${config.public.apiBase}/auth/google`
 }
 </script>

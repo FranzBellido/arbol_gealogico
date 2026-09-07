@@ -2,10 +2,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
-  modules: [
-    '@nuxt/ui',
-    '@pinia/nuxt'
-  ],
+  modules: ["@nuxt/ui", "@pinia/nuxt"],
 
   // Enable Nuxt 4 directory structure (srcDir: "app", etc.)
   future: {
@@ -14,25 +11,26 @@ export default defineNuxtConfig({
 
   // Color mode configuration for Nuxt UI
   colorMode: {
-    preference: 'dark'
+    preference: "dark",
   },
 
   // Dev server configuration
   devServer: {
-    port: 3000
+    port: 3000,
   },
 
   // Nitro server preset for Railway / Docker deployment
   nitro: {
-    preset: 'node-server',
+    preset: "node-server",
   },
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.API_BASE_URL || 'http://localhost:3001'
-    }
+      apiBase:
+        process.env.API_BASE_URL || "https://arbol-gealogico-1.onrender.com",
+      enableDemoLogin: process.env.ENABLE_DEMO_LOGIN === 'true' || process.env.NODE_ENV !== 'production',
+    },
   },
 
-  compatibilityDate: '2026-08-11'
-})
-
+  compatibilityDate: "2026-08-11",
+});
