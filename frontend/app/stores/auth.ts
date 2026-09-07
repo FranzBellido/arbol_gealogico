@@ -34,7 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('gt_token', data.access_token)
       localStorage.setItem('gt_user', JSON.stringify(data.user))
     }
-    navigateTo('/')
+    navigateTo('/personas')
   }
 
   function logout() {
@@ -58,7 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (process.client) {
         localStorage.setItem('gt_user', JSON.stringify(profileData))
       }
-      navigateTo('/')
+      navigateTo('/personas')
     } catch (e) {
       console.error('Failed to retrieve user profile', e)
       logout()

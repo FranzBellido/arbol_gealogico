@@ -87,6 +87,16 @@
         </UBadge>
 
         <UButton
+          color="gray"
+          variant="soft"
+          icon="i-heroicons-table-cells"
+          to="/personas"
+          class="flex-shrink-0"
+        >
+          <span class="hidden sm:inline">Personas</span>
+        </UButton>
+
+        <UButton
           v-if="auth.isAdmin"
           color="amber"
           variant="soft"

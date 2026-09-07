@@ -21,7 +21,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
   // 3. If user IS approved, they shouldn't access /pending or /login
   if (to.path === '/pending' || to.path === '/login') {
-    return navigateTo('/')
+    return navigateTo('/personas')
   }
 
   // 4. If user wants to access /admin, they must be an ADMIN

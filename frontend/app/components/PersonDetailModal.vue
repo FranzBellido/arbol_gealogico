@@ -54,8 +54,8 @@
           <!-- Birth -->
           <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
             <div class="text-xs text-gray-500 uppercase font-semibold mb-1 flex items-center gap-1">
-              <UIcon name="i-heroicons-star" class="w-4 h-4" />
-              Nacimiento
+              <UIcon name="i-heroicons-cake" class="w-4 h-4" />
+              Cumpleaños
             </div>
             <div class="text-gray-200">
               <div v-if="person.birthDate" class="font-medium">{{ formatDate(person.birthDate) }}</div>
