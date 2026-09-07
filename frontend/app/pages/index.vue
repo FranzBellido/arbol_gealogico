@@ -168,6 +168,7 @@
     <PersonDetailModal
       v-model="isDetailModalOpen"
       :person="selectedPerson"
+      :persons-list="persons"
       :can-edit="currentTreePermission.canWrite"
       @edit="openEditPersonModal"
     />

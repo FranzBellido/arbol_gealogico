@@ -86,6 +86,46 @@
           </div>
           <p class="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{{ person.biography }}</p>
         </div>
+
+        <!-- Children -->
+        <div v-if="children.length > 0" class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
+          <div class="text-xs text-gray-500 uppercase font-semibold mb-3 flex items-center gap-1">
+            <UIcon name="i-heroicons-users" class="w-4 h-4" />
+            Hijos ({{ children.length }})
+          </div>
+          <div class="space-y-2">
+            <div
+              v-for="child in children"
+              :key="child.id"
+              class="flex items-center gap-3 p-2 rounded-lg bg-gray-900/50 border border-gray-700/30"
+            >
+              <UAvatar
+                :src="child.avatarUrl || ''"
+                :alt="child.firstName"
+                size="sm"
+                :ui="{
+                  background: child.gender === 'MALE' ? 'bg-blue-900/50' : child.gender === 'FEMALE' ? 'bg-pink-900/50' : 'bg-gray-800'
+                }"
+                :class="[
+                  'border',
+                  child.gender === 'MALE' ? 'border-blue-500/50' : child.gender === 'FEMALE' ? 'border-pink-500/50' : 'border-purple-500/50'
+                ]"
+              />
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium text-white truncate">
+                  {{ child.firstName }} {{ child.lastName }} {{ child.lastName2 || '' }}
+                </div>
+                <div class="text-xs text-gray-400">
+                  {{ child.gender === 'MALE' ? 'Hijo' : child.gender === 'FEMALE' ? 'Hija' : 'Hijo/a' }}
+                  <span v-if="child.birthDate" class="ml-1">· {{ formatDate(child.birthDate) }}</span>
+                </div>
+              </div>
+              <UBadge :color="child.isLiving ? 'emerald' : 'gray'" variant="subtle" size="xs">
+                {{ child.isLiving ? 'Vivo/a' : 'Fallecido/a' }}
+              </UBadge>
+            </div>
+          </div>
+        </div>
       </div>
 
       <template #footer>
@@ -119,6 +159,10 @@ const props = defineProps({
     type: Object,
     default: null
   },
+  personsList: {
+    type: Array,
+    default: () => []
+  },
   canEdit: {
     type: Boolean,
     default: false
@@ -146,6 +190,13 @@ const genderLabel = computed(() => {
   return 'Otro'
 })
 
+const children = computed(() => {
+  if (!props.person || !props.personsList) return []
+  return props.personsList.filter(p =>
+    p.fatherId === props.person.id || p.motherId === props.person.id
+  )
+})
+
 function formatDate(dateString) {
   if (!dateString) return ''
   // Try to parse ISO date, otherwise return as is if it's just a string or year
@@ -155,7 +206,8 @@ function formatDate(dateString) {
     return new Intl.DateTimeFormat('es-ES', { 
       day: 'numeric', 
       month: 'long', 
-      year: 'numeric' 
+      year: 'numeric',
+      timeZone: 'UTC'
     }).format(d)
   } catch (e) {
     return dateString

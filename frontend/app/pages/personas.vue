@@ -147,6 +147,17 @@
             />
 
             <UButton
+              color="primary"
+              variant="soft"
+              icon="i-heroicons-arrow-path"
+              size="sm"
+              @click="loadTree"
+              :loading="loading"
+            >
+              Refrescar
+            </UButton>
+
+            <UButton
               v-if="hasActiveFilters"
               color="gray"
               variant="ghost"
@@ -375,6 +386,7 @@
     <PersonDetailModal
       v-model="isDetailModalOpen"
       :person="selectedPerson"
+      :persons-list="persons"
       :can-edit="currentTreePermission.canWrite"
       @edit="openEditPersonModal"
     />
@@ -504,7 +516,8 @@ function formatDate(dateString) {
     return new Intl.DateTimeFormat('es-ES', {
       day: 'numeric',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'UTC'
     }).format(d)
   } catch (e) {
     return dateString
@@ -518,7 +531,8 @@ function formatBirthday(dateString) {
     if (isNaN(d.getTime())) return dateString
     return new Intl.DateTimeFormat('es-ES', {
       day: 'numeric',
-      month: 'long'
+      month: 'long',
+      timeZone: 'UTC'
     }).format(d)
   } catch (e) {
     return dateString
