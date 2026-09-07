@@ -25,7 +25,22 @@ export class UserService {
   async updateApproval(userId: string, isApproved: boolean) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
-    return this.prisma.user.update({ where: { id: userId }, data: { isApproved } });
+    
+    const updatedUser = await this.prisma.user.update({ where: { id: userId }, data: { isApproved } });
+
+    // Si se está aprobando al usuario, asociarlo al primer árbol disponible
+    if (isApproved) {
+      const firstTree = await this.prisma.tree.findFirst();
+      if (firstTree) {
+        await this.prisma.treeUser.upsert({
+          where: { id_tree_id_user: { id_tree: firstTree.id, id_user: userId } },
+          update: {},
+          create: { id_tree: firstTree.id, id_user: userId },
+        });
+      }
+    }
+
+    return updatedUser;
   }
 
   // ─── Tree access management ────────────────────────────────
