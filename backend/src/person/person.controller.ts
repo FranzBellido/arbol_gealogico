@@ -67,6 +67,7 @@ export class PersonController {
       avatarUrl?: string;
       fatherId?: string;
       motherId?: string;
+      pais_id?: number;
     },
   ) {
     return this.personService.createPerson(req.user.id, body.treeId, body);
@@ -92,6 +93,7 @@ export class PersonController {
       avatarUrl?: string;
       fatherId?: string;
       motherId?: string;
+      pais_id?: number;
     },
   ) {
     return this.personService.updatePerson(req.user.id, id, body);

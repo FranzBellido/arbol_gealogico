@@ -27,17 +27,19 @@ model Person {
   motherId   String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
-  lastName2  String?
-  email      String?
-  phone      String?
   address    String?
+  email      String?
   is_locked  Boolean?
+  lastName2  String?
+  phone      String?
   tree_id    String    @db.Uuid
+  pais_id    Int?
   father     Person?   @relation("FatherRelation", fields: [fatherId], references: [id])
   fatherOf   Person[]  @relation("FatherRelation")
   mother     Person?   @relation("MotherRelation", fields: [motherId], references: [id])
   motherOf   Person[]  @relation("MotherRelation")
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pais       pais?     @relation(fields: [pais_id], references: [pais_id], onDelete: NoAction, onUpdate: NoAction, map: "pais_fk")
   tree       tree      @relation(fields: [tree_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tree_fk")
   photos     Photo[]
   partner1   Union[]   @relation("Union_partner1IdToPerson")
@@ -108,6 +110,12 @@ model treeUser {
   user    User   @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_fk")
 
   @@id([id_tree, id_user], map: "tree_user_pk")
+}
+
+model pais {
+  pais_id Int      @id(map: "pais_pk")
+  nombre  String   @db.VarChar(200)
+  Person  Person[]
 }
 
 enum SystemRole {

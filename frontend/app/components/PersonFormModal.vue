@@ -135,9 +135,17 @@
                 <UInput v-model="form.phone" placeholder="+59170000000" />
               </UFormGroup>
             </div>
-            <UFormGroup label="Dirección" class="mt-3">
-              <UInput v-model="form.address" placeholder="Av. Principal #123" />
-            </UFormGroup>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+              <UFormGroup label="Dirección">
+                <UInput v-model="form.address" placeholder="Av. Principal #123" />
+              </UFormGroup>
+              <UFormGroup label="País de Residencia">
+                <USelect
+                  v-model="form.pais_id"
+                  :options="countryOptions"
+                />
+              </UFormGroup>
+            </div>
           </div>
 
           <UFormGroup label="Biografía">
@@ -162,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
@@ -210,7 +218,8 @@ const defaultForm = () => ({
   fatherId: '',
   motherId: '',
   avatarUrl: '',
-  biography: ''
+  biography: '',
+  pais_id: ''
 })
 
 const form = ref(defaultForm())
@@ -226,6 +235,27 @@ const femaleOptions = computed(() =>
     .filter(p => p.gender === 'FEMALE' && p.id !== props.person?.id)
     .map(p => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))
 )
+
+const countries = ref([])
+const countryOptions = computed(() => {
+  return [
+    { label: 'Ninguno', value: '' },
+    ...countries.value.map(c => ({ label: c.nombre, value: c.pais_id }))
+  ]
+})
+
+async function fetchCountries() {
+  try {
+    const data = await auth.apiFetch('/countries')
+    countries.value = data
+  } catch (error) {
+    console.error('Error fetching countries:', error)
+  }
+}
+
+onMounted(() => {
+  fetchCountries()
+})
 
 function initForm() {
   const newPerson = props.person
@@ -247,7 +277,8 @@ function initForm() {
       fatherId: newPerson.fatherId || '',
       motherId: newPerson.motherId || '',
       avatarUrl: newPerson.avatarUrl || '',
-      biography: newPerson.biography || ''
+      biography: newPerson.biography || '',
+      pais_id: newPerson.pais_id || ''
     }
   } else {
     form.value = defaultForm()
@@ -270,7 +301,13 @@ watch(
 )
 
 function save() {
-  emit('save', { id: props.person?.id, ...form.value })
+  const payload = { ...form.value, id: props.person?.id }
+  if (payload.pais_id === '' || payload.pais_id == null) {
+    payload.pais_id = null
+  } else {
+    payload.pais_id = Number(payload.pais_id)
+  }
+  emit('save', payload)
   isOpen.value = false
 }
 

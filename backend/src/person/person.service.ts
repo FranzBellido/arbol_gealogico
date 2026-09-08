@@ -167,6 +167,7 @@ export class PersonService {
       avatarUrl?: string;
       fatherId?: string;
       motherId?: string;
+      pais_id?: number;
     },
   ) {
     await this.requireMembership(currentUserId, treeId);
@@ -192,6 +193,7 @@ export class PersonService {
         tree_id: treeId,
         fatherId: data.fatherId || null,
         motherId: data.motherId || null,
+        pais_id: data.pais_id ? Number(data.pais_id) : null,
       },
     });
   }
@@ -217,6 +219,7 @@ export class PersonService {
       avatarUrl?: string;
       fatherId?: string;
       motherId?: string;
+      pais_id?: number;
     },
   ) {
     const person = await this.prisma.person.findUnique({
@@ -252,6 +255,7 @@ export class PersonService {
         deathDate: data.deathDate ? new Date(data.deathDate) : null,
         fatherId: data.fatherId === "" || !data.fatherId ? null : data.fatherId,
         motherId: data.motherId === "" || !data.motherId ? null : data.motherId,
+        pais_id: data.pais_id ? Number(data.pais_id) : null,
       },
     });
   }
