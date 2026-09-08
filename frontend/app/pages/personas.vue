@@ -405,6 +405,7 @@
       v-model="isDetailModalOpen"
       :person="selectedPerson"
       :persons-list="persons"
+      :unions-list="unions"
       :can-edit="currentTreePermission.canWrite"
       @edit="openEditPersonModal"
     />
@@ -428,6 +429,7 @@ const toast = useToast()
 // ─── State ──────────────────────────────────────────────────
 const loading = ref(false)
 const persons = ref([])
+const unions = ref([])
 const trees = ref([])
 const selectedTreeId = ref('')
 const currentTreePermission = ref({ level: null, isAdmin: false, canWrite: false })
@@ -616,6 +618,7 @@ async function loadTree() {
   try {
     const data = await auth.apiFetch(`/tree?treeId=${selectedTreeId.value}`)
     persons.value = data.persons || []
+    unions.value = data.unions || []
 
     if (data.permission) {
       currentTreePermission.value = data.permission

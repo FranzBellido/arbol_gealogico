@@ -113,6 +113,95 @@
           <p class="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{{ person.biography }}</p>
         </div>
 
+        <!-- Parents -->
+        <div v-if="father || mother" class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
+          <div class="text-xs text-gray-500 uppercase font-semibold mb-3 flex items-center gap-1">
+            <UIcon name="i-heroicons-users" class="w-4 h-4" />
+            Padres
+          </div>
+          <div class="space-y-2">
+            <!-- Father -->
+            <div v-if="father" class="flex items-center gap-3 p-2 rounded-lg bg-gray-900/50 border border-gray-700/30">
+              <UAvatar
+                :src="father.avatarUrl || ''"
+                :alt="father.firstName"
+                size="sm"
+                :ui="{ background: 'bg-blue-900/50' }"
+                class="border border-blue-500/50"
+              />
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium text-white truncate">
+                  {{ father.firstName }} {{ father.lastName }} {{ father.lastName2 || '' }}
+                </div>
+                <div class="text-xs text-gray-400">Padre</div>
+              </div>
+              <UBadge :color="father.isLiving ? 'emerald' : 'gray'" variant="subtle" size="xs">
+                {{ father.isLiving ? 'Vivo' : 'Fallecido' }}
+              </UBadge>
+            </div>
+            <!-- Mother -->
+            <div v-if="mother" class="flex items-center gap-3 p-2 rounded-lg bg-gray-900/50 border border-gray-700/30">
+              <UAvatar
+                :src="mother.avatarUrl || ''"
+                :alt="mother.firstName"
+                size="sm"
+                :ui="{ background: 'bg-pink-900/50' }"
+                class="border border-pink-500/50"
+              />
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium text-white truncate">
+                  {{ mother.firstName }} {{ mother.lastName }} {{ mother.lastName2 || '' }}
+                </div>
+                <div class="text-xs text-gray-400">Madre</div>
+              </div>
+              <UBadge :color="mother.isLiving ? 'emerald' : 'gray'" variant="subtle" size="xs">
+                {{ mother.isLiving ? 'Viva' : 'Fallecida' }}
+              </UBadge>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unions -->
+        <div v-if="personUnions.length > 0" class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
+          <div class="text-xs text-gray-500 uppercase font-semibold mb-3 flex items-center gap-1">
+            <UIcon name="i-heroicons-heart" class="w-4 h-4 text-pink-400" />
+            Parejas / Uniones
+          </div>
+          <div class="space-y-2">
+            <div
+              v-for="union in personUnions"
+              :key="union.id"
+              class="flex items-center gap-3 p-2 rounded-lg bg-gray-900/50 border border-gray-700/30"
+            >
+              <UAvatar
+                :src="union.partner.avatarUrl || ''"
+                :alt="union.partner.firstName"
+                size="sm"
+                :ui="{
+                  background: union.partner.gender === 'MALE' ? 'bg-blue-900/50' : union.partner.gender === 'FEMALE' ? 'bg-pink-900/50' : 'bg-gray-800'
+                }"
+                :class="[
+                  'border',
+                  union.partner.gender === 'MALE' ? 'border-blue-500/50' : union.partner.gender === 'FEMALE' ? 'border-pink-500/50' : 'border-purple-500/50'
+                ]"
+              />
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium text-white truncate">
+                  {{ union.partner.firstName }} {{ union.partner.lastName }} {{ union.partner.lastName2 || '' }}
+                </div>
+                <div class="text-xs text-gray-400">
+                  <span v-if="union.marriageDate">Casados: {{ formatDate(union.marriageDate) }}</span>
+                  <span v-if="union.divorceDate" class="ml-1">· Divorciados: {{ formatDate(union.divorceDate) }}</span>
+                  <span v-if="!union.marriageDate && !union.divorceDate">Pareja</span>
+                </div>
+              </div>
+              <UBadge :color="union.isCurrent ? 'pink' : 'gray'" variant="subtle" size="xs">
+                {{ union.isCurrent ? 'Actual' : 'Anterior' }}
+              </UBadge>
+            </div>
+          </div>
+        </div>
+
         <!-- Children -->
         <div v-if="children.length > 0" class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
           <div class="text-xs text-gray-500 uppercase font-semibold mb-3 flex items-center gap-1">
@@ -190,6 +279,10 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  unionsList: {
+    type: Array,
+    default: () => []
+  },
   canEdit: {
     type: Boolean,
     default: false
@@ -216,6 +309,28 @@ const genderLabel = computed(() => {
   if (props.person.gender === 'FEMALE') return 'Femenino'
   return 'Otro'
 })
+
+const father = computed(() => {
+  if (!props.person || !props.personsList) return null;
+  return props.personsList.find(p => p.id === props.person.fatherId) || null;
+});
+
+const mother = computed(() => {
+  if (!props.person || !props.personsList) return null;
+  return props.personsList.find(p => p.id === props.person.motherId) || null;
+});
+
+const personUnions = computed(() => {
+  if (!props.person || !props.unionsList || !props.personsList) return [];
+  return props.unionsList
+    .filter(u => u.partner1Id === props.person.id || u.partner2Id === props.person.id)
+    .map(u => {
+      const partnerId = u.partner1Id === props.person.id ? u.partner2Id : u.partner1Id;
+      const partner = props.personsList.find(p => p.id === partnerId);
+      return { ...u, partner };
+    })
+    .filter(u => u.partner);
+});
 
 const children = computed(() => {
   if (!props.person || !props.personsList) return []
