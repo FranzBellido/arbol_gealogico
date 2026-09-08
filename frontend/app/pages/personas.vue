@@ -33,6 +33,17 @@
         </UButton>
 
         <UButton
+          v-if="currentTreePermission.canWrite"
+          color="pink"
+          variant="soft"
+          icon="i-heroicons-heart"
+          @click="isUnionModalOpen = true"
+          class="flex-shrink-0"
+        >
+          <span class="hidden sm:inline">Registrar Unión</span>
+        </UButton>
+
+        <UButton
           color="gray"
           variant="ghost"
           icon="i-heroicons-share"
@@ -390,6 +401,12 @@
       :can-edit="currentTreePermission.canWrite"
       @edit="openEditPersonModal"
     />
+
+    <UnionFormModal
+      v-model="isUnionModalOpen"
+      :persons-list="persons"
+      @save="handleSaveUnion"
+    />
   </div>
 </template>
 
@@ -411,6 +428,7 @@ const currentTreePermission = ref({ level: null, isAdmin: false, canWrite: false
 // Modal states
 const isPersonModalOpen = ref(false)
 const isDetailModalOpen = ref(false)
+const isUnionModalOpen = ref(false)
 const selectedPerson = ref(null)
 
 // Filters
@@ -652,6 +670,17 @@ async function handleToggleLock(personId, locked) {
   } catch (error) {
     console.error(error)
     toast.add({ title: 'Error', description: 'No se pudo cambiar el estado de bloqueo', color: 'red' })
+  }
+}
+
+async function handleSaveUnion(formData) {
+  try {
+    await auth.apiFetch('/tree/union', { method: 'POST', body: formData })
+    toast.add({ title: 'Éxito', description: 'Unión registrada correctamente', color: 'green' })
+    loadTree()
+  } catch (error) {
+    console.error(error)
+    toast.add({ title: 'Error', description: 'No se pudo registrar la unión', color: 'red' })
   }
 }
 </script>
