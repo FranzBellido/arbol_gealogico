@@ -78,6 +78,32 @@
           </div>
         </div>
 
+        <!-- Contact Data -->
+        <div v-if="person.email || person.phone || person.address || person.pais" class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
+          <div class="text-xs text-gray-500 uppercase font-semibold mb-3 flex items-center gap-1">
+            <UIcon name="i-heroicons-envelope" class="w-4 h-4" />
+            Datos de Contacto
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div v-if="person.email" class="flex items-center gap-2">
+              <UIcon name="i-heroicons-at-symbol" class="w-4 h-4 text-gray-400 shrink-0" />
+              <span class="text-gray-300 truncate">{{ person.email }}</span>
+            </div>
+            <div v-if="person.phone" class="flex items-center gap-2">
+              <UIcon name="i-heroicons-phone" class="w-4 h-4 text-gray-400 shrink-0" />
+              <span class="text-gray-300 truncate">{{ person.phone }}</span>
+            </div>
+            <div v-if="person.address" class="flex items-center gap-2">
+              <UIcon name="i-heroicons-map-pin" class="w-4 h-4 text-gray-400 shrink-0" />
+              <span class="text-gray-300 truncate">{{ person.address }}</span>
+            </div>
+            <div v-if="person.pais" class="flex items-center gap-2">
+              <UIcon name="i-heroicons-globe-americas" class="w-4 h-4 text-gray-400 shrink-0" />
+              <span class="text-gray-300 truncate">{{ person.pais.nombre }}</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Biography -->
         <div v-if="person.biography" class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
           <div class="text-xs text-gray-500 uppercase font-semibold mb-2 flex items-center gap-1">
@@ -137,6 +163,7 @@
             v-if="canEdit"
             color="primary"
             icon="i-heroicons-pencil-square"
+            :disabled="person.is_locked"
             @click="emitEdit"
           >
             Editar

@@ -157,6 +157,13 @@
               class="min-w-[130px]"
             />
 
+            <USelect
+              v-model="filterCountry"
+              :options="countryFilterOptions"
+              placeholder="País"
+              class="min-w-[150px]"
+            />
+
             <UButton
               color="primary"
               variant="soft"
@@ -281,7 +288,7 @@
                     <UBadge :color="person.isLiving ? 'emerald' : 'gray'" variant="subtle">
                       {{ person.isLiving ? 'Vivo/a' : 'Fallecido/a' }}
                     </UBadge>
-                    <UBadge v-if="person.isLocked" color="amber" variant="subtle" size="xs">
+                    <UBadge v-if="person.is_locked" color="amber" variant="subtle" size="xs">
                       <UIcon name="i-heroicons-lock-closed" class="w-3 h-3" />
                     </UBadge>
                   </div>
@@ -320,7 +327,7 @@
                       @click="openViewPersonModal(person)"
                     />
                     <UButton
-                      v-if="currentTreePermission.canWrite && !person.isLocked"
+                      v-if="currentTreePermission.canWrite && !person.is_locked"
                       color="primary"
                       variant="ghost"
                       icon="i-heroicons-pencil-square"
@@ -328,7 +335,7 @@
                       @click="openEditPersonModal(person)"
                     />
                     <UButton
-                      v-if="currentTreePermission.canWrite && !person.isLocked"
+                      v-if="currentTreePermission.canWrite && !person.is_locked"
                       color="red"
                       variant="ghost"
                       icon="i-heroicons-trash"
@@ -387,7 +394,7 @@
       v-model="isPersonModalOpen"
       :person="selectedPerson"
       :persons-list="persons"
-      :is-locked="selectedPerson?.isLocked || false"
+      :is-locked="selectedPerson?.is_locked || false"
       :can-admin="currentTreePermission.isAdmin"
       @save="handleSavePerson"
       @delete="handleDeletePerson"
@@ -435,6 +442,7 @@ const selectedPerson = ref(null)
 const searchQuery = ref('')
 const filterGender = ref('')
 const filterVitalStatus = ref('')
+const filterCountry = ref('')
 const currentPage = ref(1)
 const pageSize = 10
 
@@ -451,7 +459,24 @@ const vitalStatusOptions = [
   { label: 'Fallecidos', value: 'deceased' }
 ]
 
-const hasActiveFilters = computed(() => searchQuery.value || filterGender.value || filterVitalStatus.value)
+const hasActiveFilters = computed(() => searchQuery.value || filterGender.value || filterVitalStatus.value || filterCountry.value)
+
+const countries = ref([])
+const countryFilterOptions = computed(() => {
+  return [
+    { label: 'Todos los países', value: '' },
+    ...countries.value.map(c => ({ label: c.nombre, value: c.pais_id }))
+  ]
+})
+
+async function fetchCountries() {
+  try {
+    const data = await auth.apiFetch('/countries')
+    countries.value = data
+  } catch (error) {
+    console.error('Error fetching countries:', error)
+  }
+}
 
 // ─── Tree selector options ───────────────────────────────────
 const treeOptions = computed(() => {
@@ -487,6 +512,11 @@ const filteredPersons = computed(() => {
     result = result.filter(p => !p.isLiving)
   }
 
+  // Country filter
+  if (filterCountry.value !== '') {
+    result = result.filter(p => p.pais_id === filterCountry.value)
+  }
+
   // Sort alphabetically
   result.sort((a, b) => `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`))
 
@@ -515,7 +545,7 @@ const visiblePages = computed(() => {
 })
 
 // Reset page when filters change
-watch([searchQuery, filterGender, filterVitalStatus], () => {
+watch([searchQuery, filterGender, filterVitalStatus, filterCountry], () => {
   currentPage.value = 1
 })
 
@@ -561,6 +591,7 @@ function clearFilters() {
   searchQuery.value = ''
   filterGender.value = ''
   filterVitalStatus.value = ''
+  filterCountry.value = ''
 }
 
 // ─── Load trees list ─────────────────────────────────────────
@@ -602,6 +633,7 @@ watch(selectedTreeId, () => {
 })
 
 onMounted(async () => {
+  fetchCountries()
   await loadTrees()
   if (selectedTreeId.value) loadTree()
 })

@@ -16,7 +16,7 @@
           <div class="flex items-center gap-2">
             <!-- Botón de bloqueo/desbloqueo — solo admin del árbol en modo edición -->
             <UButton
-              v-if="isEdit && canAdmin"
+              v-if="canAdmin"
               :color="isLocked ? 'amber' : 'gray'"
               :variant="isLocked ? 'soft' : 'ghost'"
               :icon="isLocked ? 'i-heroicons-lock-open' : 'i-heroicons-lock-closed'"

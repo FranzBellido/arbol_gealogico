@@ -118,7 +118,7 @@ export class PersonService {
 
     const persons = await this.prisma.person.findMany({
       where: { tree_id: treeId },
-      include: { photos: true },
+      include: { photos: true, pais: true },
     });
 
     const personIds = persons.map((p) => p.id);
