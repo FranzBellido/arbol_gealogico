@@ -4,7 +4,7 @@
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="text-base font-semibold leading-6 text-white">
-            Crear Nueva Unión / Matrimonio
+            {{ isEdit ? 'Editar Unión / Matrimonio' : 'Crear Nueva Unión / Matrimonio' }}
           </h3>
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark" class="-my-1" @click="isOpen = false" />
         </div>
@@ -43,11 +43,14 @@
         </UFormGroup>
 
         <div class="flex justify-end gap-3 pt-4">
+          <UButton v-if="isEdit" type="button" color="red" variant="ghost" @click="handleDelete">
+            Eliminar
+          </UButton>
           <UButton type="button" color="gray" variant="ghost" @click="isOpen = false">
             Cancelar
           </UButton>
           <UButton type="submit" color="primary">
-            Registrar Unión
+            {{ isEdit ? 'Guardar Cambios' : 'Registrar Unión' }}
           </UButton>
         </div>
       </form>
@@ -56,27 +59,63 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
-  personsList: Array
+  personsList: Array,
+  union: Object
 })
 
-const emit = defineEmits(['update:modelValue', 'save'])
+const emit = defineEmits(['update:modelValue', 'save', 'delete'])
 
 const isOpen = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
 })
 
-const form = ref({
-  partner1Id: '',
-  partner2Id: '',
-  marriageDate: '',
-  divorceDate: '',
-  isCurrent: true
-})
+const isEdit = computed(() => !!props.union?.id)
+
+function defaultForm() {
+  return {
+    partner1Id: '',
+    partner2Id: '',
+    marriageDate: '',
+    divorceDate: '',
+    isCurrent: true
+  }
+}
+
+const form = ref(defaultForm())
+
+function initForm() {
+  if (props.union) {
+    form.value = {
+      partner1Id: props.union.partner1Id || '',
+      partner2Id: props.union.partner2Id || '',
+      marriageDate: props.union.marriageDate ? props.union.marriageDate.substring(0, 10) : '',
+      divorceDate: props.union.divorceDate ? props.union.divorceDate.substring(0, 10) : '',
+      isCurrent: props.union.isCurrent !== false
+    }
+  } else {
+    form.value = defaultForm()
+  }
+}
+
+watch(
+  () => props.union,
+  initForm,
+  { immediate: true }
+)
+
+watch(
+  () => props.modelValue,
+  (isOpen) => {
+    if (isOpen) {
+      initForm()
+    }
+  }
+)
 
 const personOptions = computed(() => {
   return props.personsList.map((p) => ({
@@ -90,7 +129,14 @@ function save() {
     alert('Una persona no puede formar una unión consigo misma.')
     return
   }
-  emit('save', { ...form.value })
+  emit('save', { id: props.union?.id, ...form.value })
   isOpen.value = false
+}
+
+function handleDelete() {
+  if (confirm('¿Estás seguro de que deseas eliminar esta unión?')) {
+    emit('delete', props.union.id)
+    isOpen.value = false
+  }
 }
 </script>

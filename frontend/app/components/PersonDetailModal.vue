@@ -162,6 +162,8 @@
         </div>
 
         <!-- Unions -->
+         <!--
+      
         <div v-if="personUnions.length > 0" class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
           <div class="text-xs text-gray-500 uppercase font-semibold mb-3 flex items-center gap-1">
             <UIcon name="i-heroicons-heart" class="w-4 h-4 text-pink-400" />
@@ -201,7 +203,7 @@
             </div>
           </div>
         </div>
-
+  -->
         <!-- Children -->
         <div v-if="children.length > 0" class="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
           <div class="text-xs text-gray-500 uppercase font-semibold mb-3 flex items-center gap-1">

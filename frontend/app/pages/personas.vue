@@ -37,7 +37,7 @@
           color="pink"
           variant="soft"
           icon="i-heroicons-heart"
-          @click="isUnionModalOpen = true"
+          @click="isUnionModalOpen = true; selectedUnion = null"
           class="flex-shrink-0"
         >
           <span class="hidden sm:inline">Registrar Unión</span>
@@ -394,11 +394,14 @@
       v-model="isPersonModalOpen"
       :person="selectedPerson"
       :persons-list="persons"
+      :unions-list="unions"
       :is-locked="selectedPerson?.is_locked || false"
       :can-admin="currentTreePermission.isAdmin"
       @save="handleSavePerson"
       @delete="handleDeletePerson"
       @toggle-lock="handleToggleLock"
+      @edit-union="openEditUnionModal"
+      @create-union="openCreateUnionModalForPerson"
     />
 
     <PersonDetailModal
@@ -413,7 +416,9 @@
     <UnionFormModal
       v-model="isUnionModalOpen"
       :persons-list="persons"
+      :union="selectedUnion"
       @save="handleSaveUnion"
+      @delete="handleDeleteUnion"
     />
   </div>
 </template>
@@ -439,6 +444,7 @@ const isPersonModalOpen = ref(false)
 const isDetailModalOpen = ref(false)
 const isUnionModalOpen = ref(false)
 const selectedPerson = ref(null)
+const selectedUnion = ref(null)
 
 // Filters
 const searchQuery = ref('')
@@ -657,6 +663,16 @@ function openEditPersonModal(person) {
   isPersonModalOpen.value = true
 }
 
+function openEditUnionModal(union) {
+  selectedUnion.value = union
+  isUnionModalOpen.value = true
+}
+
+function openCreateUnionModalForPerson(personId) {
+  selectedUnion.value = { partner1Id: personId }
+  isUnionModalOpen.value = true
+}
+
 async function handleSavePerson(formData) {
   try {
     const isEdit = !!formData.id
@@ -710,12 +726,28 @@ async function handleToggleLock(personId, locked) {
 
 async function handleSaveUnion(formData) {
   try {
-    await auth.apiFetch('/tree/union', { method: 'POST', body: formData })
-    toast.add({ title: 'Éxito', description: 'Unión registrada correctamente', color: 'green' })
+    const isEdit = !!formData.id
+    if (isEdit) {
+      await auth.apiFetch(`/tree/union/${formData.id}`, { method: 'PUT', body: formData })
+    } else {
+      await auth.apiFetch('/tree/union', { method: 'POST', body: formData })
+    }
+    toast.add({ title: 'Éxito', description: 'Unión guardada correctamente', color: 'green' })
     loadTree()
   } catch (error) {
     console.error(error)
     toast.add({ title: 'Error', description: 'No se pudo registrar la unión', color: 'red' })
+  }
+}
+
+async function handleDeleteUnion(unionId) {
+  try {
+    await auth.apiFetch(`/tree/union/${unionId}`, { method: 'DELETE' })
+    toast.add({ title: 'Éxito', description: 'Unión eliminada correctamente', color: 'green' })
+    loadTree()
+  } catch (error) {
+    console.error(error)
+    toast.add({ title: 'Error', description: 'No se pudo eliminar la unión', color: 'red' })
   }
 }
 </script>
