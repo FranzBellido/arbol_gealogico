@@ -26,6 +26,15 @@ export class UserController {
     return this.userService.updateApproval(userId, body.isApproved);
   }
 
+  @Patch(':id/role')
+  @UseGuards(AdminGuard)
+  async updateRole(
+    @Param('id') userId: string,
+    @Body() body: { systemRole: string },
+  ) {
+    return this.userService.updateRole(userId, body.systemRole);
+  }
+
   // ─── Tree access management (solo admin del sistema) ───────
 
   /**

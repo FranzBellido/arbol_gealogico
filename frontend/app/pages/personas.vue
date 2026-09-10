@@ -22,7 +22,7 @@
         />
 
         <UButton
-          v-if="currentTreePermission.canWrite"
+          v-if="canEditRecords"
           color="primary"
           variant="soft"
           icon="i-heroicons-user-plus"
@@ -33,7 +33,7 @@
         </UButton>
 
         <UButton
-          v-if="currentTreePermission.canWrite"
+          v-if="canEditRecords"
           color="pink"
           variant="soft"
           icon="i-heroicons-heart"
@@ -54,7 +54,7 @@
         </UButton>
 
         <!-- Badge de solo lectura -->
-        <UBadge v-if="!currentTreePermission.canWrite && selectedTreeId" color="amber" variant="soft" class="gap-1">
+        <UBadge v-if="!canEditRecords && selectedTreeId" color="amber" variant="soft" class="gap-1">
           <UIcon name="i-heroicons-lock-closed" class="w-3 h-3" />
           Solo lectura
         </UBadge>
@@ -205,7 +205,7 @@
       <div v-else-if="persons.length === 0" class="flex flex-col items-center justify-center py-20 gap-4">
         <UIcon name="i-heroicons-user-plus" class="text-gray-700 w-16 h-16" />
         <p class="text-gray-500 text-lg font-medium">No hay personas en este árbol</p>
-        <UButton v-if="currentTreePermission.canWrite" color="primary" icon="i-heroicons-plus" @click="openAddPersonModal">
+        <UButton v-if="canEditRecords" color="primary" icon="i-heroicons-plus" @click="openAddPersonModal">
           Agregar Primera Persona
         </UButton>
       </div>
@@ -327,7 +327,7 @@
                       @click="openViewPersonModal(person)"
                     />
                     <UButton
-                      v-if="currentTreePermission.canWrite && !person.is_locked"
+                      v-if="canEditRecords && !person.is_locked"
                       color="primary"
                       variant="ghost"
                       icon="i-heroicons-pencil-square"
@@ -335,7 +335,7 @@
                       @click="openEditPersonModal(person)"
                     />
                     <UButton
-                      v-if="currentTreePermission.canWrite && !person.is_locked"
+                      v-if="canEditRecords && !person.is_locked"
                       color="red"
                       variant="ghost"
                       icon="i-heroicons-trash"
@@ -409,7 +409,7 @@
       :person="selectedPerson"
       :persons-list="persons"
       :unions-list="unions"
-      :can-edit="currentTreePermission.canWrite"
+      :can-edit="canEditRecords"
       @edit="openEditPersonModal"
     />
 
@@ -438,6 +438,12 @@ const unions = ref([])
 const trees = ref([])
 const selectedTreeId = ref('')
 const currentTreePermission = ref({ level: null, isAdmin: false, canWrite: false })
+
+const canEditRecords = computed(() => {
+  if (!auth.user) return false;
+  const role = auth.user.systemRole;
+  return (role === 'ADMIN' || role === 'EDIT') && currentTreePermission.value.canWrite;
+})
 
 // Modal states
 const isPersonModalOpen = ref(false)

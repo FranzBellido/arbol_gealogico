@@ -43,6 +43,17 @@ export class UserService {
     return updatedUser;
   }
 
+  async updateRole(userId: string, systemRole: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    
+    // cast string to SystemRole (Prisma will validate on query)
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { systemRole: systemRole as any },
+    });
+  }
+
   // ─── Tree access management ────────────────────────────────
 
   /**

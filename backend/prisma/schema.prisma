@@ -121,6 +121,7 @@ model pais {
 enum SystemRole {
   ADMIN
   USER
+  EDIT
 }
 
 enum TreePermission {

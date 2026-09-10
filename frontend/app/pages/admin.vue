@@ -60,7 +60,16 @@
                   {{ u.email }}
                 </td>
                 <td class="py-4 px-6">
+                  <USelect
+                    v-if="u.id !== auth.user?.id"
+                    v-model="u.systemRole"
+                    :options="['ADMIN', 'EDIT', 'USER']"
+                    :disabled="actionLoadingId === u.id"
+                    @change="updateRole(u.id, u.systemRole)"
+                    class="min-w-[120px]"
+                  />
                   <UBadge
+                    v-else
                     :color="u.systemRole === 'ADMIN' ? 'amber' : 'gray'"
                     variant="soft"
                   >
@@ -162,6 +171,26 @@ async function toggleApproval(userId, newStatus) {
   } catch (error) {
     console.error(error)
     toast.add({ title: 'Error', description: 'No se pudo actualizar el estado de aprobación.', color: 'red' })
+  } finally {
+    actionLoadingId.value = null
+  }
+}
+
+async function updateRole(userId, newRole) {
+  actionLoadingId.value = userId
+  try {
+    await auth.apiFetch(`/users/${userId}/role`, {
+      method: 'PATCH',
+      body: { systemRole: newRole }
+    })
+    toast.add({
+      title: 'Éxito',
+      description: 'Rol actualizado correctamente',
+      color: 'green'
+    })
+  } catch (error) {
+    console.error(error)
+    toast.add({ title: 'Error', description: 'No se pudo actualizar el rol.', color: 'red' })
   } finally {
     actionLoadingId.value = null
   }
