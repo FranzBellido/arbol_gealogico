@@ -304,13 +304,15 @@ const form = ref(defaultForm())
 const maleOptions = computed(() =>
   (props.personsList || [])
     .filter(p => p.gender === 'MALE' && p.id !== props.person?.id)
-    .map(p => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))
+    .map(p => ({ label: `${p.firstName} ${p.lastName} ${p.lastName2 || ''}`.trim(), value: p.id }))
+    .sort((a, b) => a.label.localeCompare(b.label))
 )
 
 const femaleOptions = computed(() =>
   (props.personsList || [])
     .filter(p => p.gender === 'FEMALE' && p.id !== props.person?.id)
-    .map(p => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))
+    .map(p => ({ label: `${p.firstName} ${p.lastName} ${p.lastName2 || ''}`.trim(), value: p.id }))
+    .sort((a, b) => a.label.localeCompare(b.label))
 )
 
 const countries = ref([])
