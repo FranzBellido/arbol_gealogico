@@ -119,9 +119,9 @@ watch(
 
 const personOptions = computed(() => {
   return props.personsList.map((p) => ({
-    label: `${p.firstName} ${p.lastName} (${p.gender === 'MALE' ? 'M' : 'F'})`,
+    label: `${p.firstName} ${p.lastName} ${p.lastName2 || ''} (${p.gender === 'MALE' ? 'M' : 'F'})`.replace(/  +/g, ' '),
     value: p.id
-  }))
+  })).sort((a, b) => a.label.localeCompare(b.label))
 })
 
 function save() {

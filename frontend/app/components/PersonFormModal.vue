@@ -235,7 +235,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
@@ -431,10 +431,12 @@ function formatDate(dateString) {
 }
 
 function emitEditUnion(union) {
-  emit('edit-union', union)
+  isOpen.value = false
+  nextTick(() => emit('edit-union', union))
 }
 
 function emitCreateUnion() {
-  emit('create-union', props.person.id)
+  isOpen.value = false
+  nextTick(() => emit('create-union', props.person.id))
 }
 </script>
